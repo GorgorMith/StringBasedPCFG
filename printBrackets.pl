@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use StringBasedPCFG;
+use StringBasedPCFG::StringBasedPCFG;
 
 sub main {
     my $tree     = shift;

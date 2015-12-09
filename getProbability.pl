@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use Getopt::Long;
-use StringBasedPCFG;
+use StringBasedPCFG::StringBasedPCFG;
 
 my $help  = 0;
 my $Usage = <<"EOT";

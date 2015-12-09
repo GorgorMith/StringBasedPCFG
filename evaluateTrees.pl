@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use Getopt::Long;
-use StringBasedPCFG;
+use StringBasedPCFG::StringBasedPCFG;
 
 our $cardinalities;
 our $verbose;
