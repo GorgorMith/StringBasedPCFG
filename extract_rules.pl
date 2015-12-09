@@ -32,7 +32,7 @@ GetOptions(
     "help|h"             => \$help
 ) or die "$Usage";
 
-if ($help) {
+if ( $help or scalar @ARGV == 0 ) {
     print "$Usage" and exit;
 }
 
