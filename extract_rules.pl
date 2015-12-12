@@ -5,6 +5,7 @@ use warnings;
 
 use Getopt::Long;
 use StringBasedPCFG::StringBasedPCFG;
+use Set::Scalar;
 
 our $no_probabilities = 0;
 my $help = 0;
@@ -42,30 +43,41 @@ sub main {
     # 1. A string holding the name of a file containing a treebank.
     my $filename = shift;
     my @trees    = StringBasedPCFG::getTrees($filename);
-    my @rules    = StringBasedPCFG::getRulesFromTreeArray(@trees);
+    my ($rules, $startSymbol) = StringBasedPCFG::getRulesFromTreeArray(@trees);
 
     if ($no_probabilities) {
 
         # Without weights.
-        my %ruleHash = array_to_hash(@rules);
-        print join( "\n", sort keys %ruleHash ), "\n";
+        printRules($rules, $startSymbol);
     }
     else {
 
         # With weights.
-        my %nonTerminalFrequencies = StringBasedPCFG::getNonTerminalFrequencies(@rules);
+        my %nonTerminalFrequencies =
+          StringBasedPCFG::getNonTerminalFrequencies(@$rules);
+
         my %weightedRules =
-          StringBasedPCFG::getWeights( \%nonTerminalFrequencies, @rules );
-        StringBasedPCFG::printWeightedRules( \%weightedRules );
+          StringBasedPCFG::getWeights( \%nonTerminalFrequencies, @$rules );
+
+        StringBasedPCFG::printWeightedRules( \%weightedRules, $startSymbol );
     }
 }
 
-sub array_to_hash {
+sub printRules {
 
-    # Turn array to hash mapping the elements to undef.
+    # Print an array of rules with the starting rules at the top.
     # Args:
-    # 1. An array
-    return map { $_ => undef } @_;
+    # 1. A reference to an array of rules.
+    # 2. The start symbol.
+    my $ruleArray = shift;
+    my $startSymbol = shift;
+
+    my $rules = Set::Scalar->new(@$ruleArray);
+    my $startingRules = Set::Scalar->new(grep {/^\Q$startSymbol\E\s+/} @$rules);
+    my $nonStartingRules = $rules - $startingRules;
+
+    print join("\n", sort @$startingRules), "\n";
+    print join("\n", sort @$nonStartingRules), "\n";
 }
 
 main @ARGV;

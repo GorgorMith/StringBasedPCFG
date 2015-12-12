@@ -63,23 +63,33 @@ sub getRulesFromTreeArray {
     # 1. An array of trees.
     my @trees = @_;
     my @rules;
+    my $startSymbols = Set::Scalar->new;
 
     # Get Rules.
     for my $tree (@trees) {
-        push @rules, getRulesFromTree($tree);
+        my ($treeRules, $startSymbol) = getRulesFromTree($tree);
+        push @rules, @$treeRules;
+        $startSymbols->insert($startSymbol)
     }
 
-    return @rules;
+    if ($startSymbols->size > 1) {
+        # Only one start symbol is allowed.
+        die "More than one start symbol found: $startSymbols\n";
+    }
+
+    my $startSymbol = @$startSymbols[0];
+    return (\@rules, $startSymbol);
 }
 
 sub getRulesFromTree {
 
-    # Get an array of phrase structure rules from a tree.
+    # Get an array of phrase structure rules and a start symbol from a tree.
     # The array can hold one rule multiple times.
     # Args:
     # 1. A string holding a tree.
     my $tree = shift;
     my @rules;
+    my $startSymbol = '';
 
     # Remove whitespace from tree.
     $tree =~ s/\s+//g;
@@ -87,19 +97,21 @@ sub getRulesFromTree {
     if ( $tree =~ /^\(([^)]+)\)$/ ) {
 
        # Break recursion if the tree only contains an expression in parentheses.
-        return @rules;
+        return (\@rules, $startSymbol);
     }
     elsif ( $tree =~ /^\(([^)(]+)(\(.*\))\)$/ ) {
 
         # Get rules recursively.
         #my ( $left, $remainder ) = ( $1, $2 );
         my $left    = $1;
+        $startSymbol = $left;
         my @phrases = getDaughterTrees($tree);
         my @rightParts;
         for my $phrase (@phrases) {
             $phrase =~ /^\(([^)(]+).*$/;
             push @rightParts, $1;
-            push @rules,      getRulesFromTree($phrase);
+            my ($phraseRules, $phraseStartSymbol) = getRulesFromTree($phrase);
+            push @rules, @$phraseRules;
         }
         my $right = join ' ', @rightParts;
         my $rule = "$left -> $right";
@@ -108,7 +120,7 @@ sub getRulesFromTree {
     else {
         die "Could not read tree: $tree";
     }
-    return @rules;
+    return (\@rules, $startSymbol);
 }
 
 sub getDaughterTrees {
@@ -200,13 +212,28 @@ sub getWeights {
 sub printWeightedRules {
 
     # Print a hash mapping rules to their probability weights.
+    # Print the starting rules at the top.
     # Args:
     # 1. A reference to a hash mapping rules to their probability weights.
+    # 2. The start symbol.
     my $weightedRules = shift;
+    my $startSymbol = shift;
+    my @startingRules;
+    my @nonStartingRules;
+
     foreach my $rule ( sort keys %$weightedRules ) {
         my $weight = $weightedRules->{$rule};
-        print "$rule\t$weight\n";
+        my $ruleString = "$rule\t$weight";
+
+        if ($rule =~ /^\Q$startSymbol\E\s+/) {
+            push @startingRules, $ruleString;
+        }
+        else {
+            push @nonStartingRules, $ruleString;
+        }
     }
+    print join("\n", @startingRules), "\n";
+    print join("\n", @nonStartingRules), "\n";
 }
 
 sub readWeightedRules {
