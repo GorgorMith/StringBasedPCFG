@@ -43,12 +43,13 @@ sub main {
     # 1. A string holding the name of a file containing a treebank.
     my $filename = shift;
     my @trees    = StringBasedPCFG::getTrees($filename);
-    my ($rules, $startSymbol) = StringBasedPCFG::getRulesFromTreeArray(@trees);
+    my ( $rules, $startSymbol ) =
+      StringBasedPCFG::getRulesFromTreeArray(@trees);
 
     if ($no_probabilities) {
 
         # Without weights.
-        printRules($rules, $startSymbol);
+        printRules( $rules, $startSymbol );
     }
     else {
 
@@ -69,15 +70,16 @@ sub printRules {
     # Args:
     # 1. A reference to an array of rules.
     # 2. The start symbol.
-    my $ruleArray = shift;
+    my $ruleArray   = shift;
     my $startSymbol = shift;
 
     my $rules = Set::Scalar->new(@$ruleArray);
-    my $startingRules = Set::Scalar->new(grep {/^\Q$startSymbol\E\s+/} @$rules);
+    my $startingRules =
+      Set::Scalar->new( grep { /^\Q$startSymbol\E\s+/ } @$rules );
     my $nonStartingRules = $rules - $startingRules;
 
-    print join("\n", sort @$startingRules), "\n";
-    print join("\n", sort @$nonStartingRules), "\n";
+    print join( "\n", sort @$startingRules ),    "\n";
+    print join( "\n", sort @$nonStartingRules ), "\n";
 }
 
 main @ARGV;

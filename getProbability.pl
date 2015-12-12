@@ -6,7 +6,7 @@ use warnings;
 use Getopt::Long;
 use StringBasedPCFG::StringBasedPCFG;
 
-my $help  = 0;
+my $help = 0;
 our $lisp_tree = 0;
 
 my $Usage = <<"EOT";
@@ -38,7 +38,7 @@ EOT
 
 GetOptions(
     "lisp-tree|l" => \$lisp_tree,
-    "help|h"             => \$help
+    "help|h"      => \$help
 ) or die "$Usage";
 
 if ( $help or scalar @ARGV == 0 ) {
@@ -59,7 +59,8 @@ sub main {
     }
 
     my %weightedRules = StringBasedPCFG::readWeightedRules($grammarFile);
-    my $probability = StringBasedPCFG::getProbabilityOfTree( $tree, \%weightedRules );
+    my $probability =
+      StringBasedPCFG::getProbabilityOfTree( $tree, \%weightedRules );
     print $probability, "\n";
 }
 
