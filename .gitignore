@@ -53,3 +53,7 @@ nytprof.out
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+# Editor swap files #
+*.swp
+*~
