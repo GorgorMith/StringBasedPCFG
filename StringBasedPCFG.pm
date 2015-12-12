@@ -28,6 +28,21 @@ our @EXPORT_OK = qw(
   calculateEvaluation
 );
 
+sub getTreeFromLispTree {
+    
+    # Read a tree representation in true lisp format and return one
+    # compatible with this module.
+    # Args:
+    # 1. A string holding a tree in lisp format.
+    my $tree = shift;
+
+    # Make whitespace uniform.
+    $tree =~ s/\s+/ /g;
+
+    $tree =~ s/(?<=[^(] )[^)(]+(?=\))/('$&')/g;
+    return $tree;
+}
+
 sub getTrees {
 
     # Get an array of trees from a file containing a treebank.
@@ -264,12 +279,12 @@ sub getProbabilityOfTree {
     # 2. A reference to a hash mapping phrase structure rules to probabilities.
     my $tree        = shift;
     my $grammarRef  = shift;
-    my @usedRules   = getRulesFromTree($tree);
+    my ($usedRules, $startSymbol) = getRulesFromTree($tree);
     my $probability = 1.0;
 
     #$probability *= $grammarRef->{$_} for @usedRules
     #    or die "Rule not in grammar: $_";
-    foreach my $rule (@usedRules) {
+    foreach my $rule (@$usedRules) {
         $probability *= $grammarRef->{$rule};
     }
     return $probability;
